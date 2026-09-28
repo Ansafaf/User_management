@@ -17,10 +17,11 @@ app.get("/",(req,res)=>{
         message: "Backend is runnning"
     })
 })
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 connectDb()
   .then(()=>{
-    app.listen(PORT,()=> console.log(`Server is running on port ${PORT}`))
-  })
+    app.listen(PORT,()=>
+        console.log(`Server is running on port ${PORT}`));
+    })
   .catch((err)=> console.log("Server has an issue: ",err));
