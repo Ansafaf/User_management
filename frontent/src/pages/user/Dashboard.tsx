@@ -1,53 +1,88 @@
+import UserNavbar from "../../components/UserNavbar";
+import { useAuth } from "../../hooks/auth";
+
 const UserDashboard = () => {
+  const { user } = useAuth();
+
+  const firstName = user?.name?.split(" ")[0] || "User";
+  const roleLabel = user?.role === "admin" ? "Administrator" : "Member";
+
+  const stats = [
+    { label: "Open Tasks", value: user?.role === "admin" ? 8 : 12 },
+    { label: "Team Members", value: user?.role === "admin" ? 31 : 24 },
+    { label: "Projects", value: user?.role === "admin" ? 10 : 8 },
+    { label: "Alerts", value: user?.role === "admin" ? 2 : 3 },
+  ];
+
+  const myTasks =
+    user?.role === "admin"
+      ? [
+          "Review approval queue",
+          "Audit access permissions",
+          "Approve onboarding requests",
+        ]
+      : [
+          "Review access request",
+          "Finalize onboarding checklist",
+          "Update profile details",
+        ];
+
+  const recentUpdates =
+    user?.role === "admin"
+      ? [
+          "Access policy updated",
+          "New admin approvals pending",
+          "Security review completed",
+        ]
+      : [
+          "System maintenance scheduled",
+          "New team members approved",
+          "Security policy updated",
+        ];
+
   return (
     <div className="page-shell">
       <div className="page-card dashboard-box">
+        <UserNavbar />
+
         <div className="section-header">
-          <h1>User Dashboard</h1>
-          <button className="primary-btn small-btn">New Request</button>
+          <div>
+            <p className="muted-text">Welcome back, {firstName}</p>
+            <h1>{roleLabel} Dashboard</h1>
+          </div>
         </div>
 
         <div className="stats-grid">
-          <div className="stat-card">
-            <span>Open Tasks</span>
-            <strong>12</strong>
-          </div>
-          <div className="stat-card">
-            <span>Team Members</span>
-            <strong>24</strong>
-          </div>
-          <div className="stat-card">
-            <span>Projects</span>
-            <strong>8</strong>
-          </div>
-          <div className="stat-card">
-            <span>Alerts</span>
-            <strong>3</strong>
-          </div>
+          {stats.map((stat) => (
+            <div className="stat-card" key={stat.label}>
+              <span>{stat.label}</span>
+              <strong>{stat.value}</strong>
+            </div>
+          ))}
         </div>
 
         <div className="details-grid">
           <div className="list-box">
             <h3>My Tasks</h3>
             <ul>
-              <li>Review access request</li>
-              <li>Finalize onboarding checklist</li>
-              <li>Update profile details</li>
+              {myTasks.map((task) => (
+                <li key={task}>{task}</li>
+              ))}
             </ul>
           </div>
 
           <div className="list-box">
             <h3>Recent Updates</h3>
             <ul>
-              <li>System maintenance scheduled</li>
-              <li>New team members approved</li>
-              <li>Security policy updated</li>
+              {recentUpdates.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
             </ul>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default UserDashboard

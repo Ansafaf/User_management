@@ -13,26 +13,33 @@ import UserProfile from "../pages/user/Profile";
 import EditProfile from "../pages/user/EditProfile";
 import ChangePassword from "../pages/user/changePassword";
 import NotFoundPage from "../pages/public/NotFoundPage";
+import PublicOnlyRoute from "./PublicOnlyRoute";
+import ProtectedRoute from "./ProtectedRoute";
+import AdminRoute from "./AdminRoute";
 
 export function AppRoutes() {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/login" element={<Login />} />
-
+      <Route element={<PublicOnlyRoute />}>
+         <Route path="/" element={<LandingPage />} />
+         <Route path="/register" element={<Register />} />
+         <Route path="/login" element={<Login />} />
+      </Route>
       {/* User routes */}
+      <Route element={<ProtectedRoute/>}>
       <Route path="/dashboard" element={<UserDashboard />} />
       <Route path="/profile" element={<UserProfile />} />
       <Route path="/profile/edit" element={<EditProfile />} />
       <Route path="/change-password" element={<ChangePassword />} />
+      </Route>
 
       {/* Admin routes */}
-      <Route path="/admin/dashboard" element={<AdminDashboard />} />
-      <Route path="/admin/users" element={<Users />} />
-      <Route path="/admin/users/:id" element={<UserDetails />} />
-
+      <Route element={<AdminRoute />}>
+         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+         <Route path="/admin/users" element={<Users />} />
+         <Route path="/admin/users/:id" element={<UserDetails />} />
+      </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
