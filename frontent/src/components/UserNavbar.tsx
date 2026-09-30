@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/auth";
 
 const UserNavbar = () => {
@@ -19,30 +19,31 @@ const UserNavbar = () => {
 
   return (
     <header className="user-topbar">
-      <div className="user-brand-wrap">
-        <div className="user-brand">UM</div>
-        <span>User Portal</span>
-      </div>
+      <Link className="user-brand-wrap" to="/dashboard" aria-label="User portal home">
+        <span className="user-brand">U</span>
+        <span className="user-brand-name">Teamspace</span>
+      </Link>
 
       <nav className="user-navbar" aria-label="Main navigation">
-        <Link to="/dashboard">Dashboard</Link>
-        <Link to="/profile">Profile</Link>
-        <Link to="/profile/edit">Edit Profile</Link>
-        <Link to="/change-password">Change Password</Link>
+        <NavLink to="/dashboard" end>Dashboard</NavLink>
+        <NavLink to="/profile">Profile</NavLink>
       </nav>
 
-      <div className="user-profile-pill">
-        <div className="user-avatar" aria-label="Profile avatar">
-          {initials}
+      <details className="user-account-menu">
+        <summary>
+          <span className="user-avatar" aria-hidden="true">{initials}</span>
+          <span className="user-meta">
+            <strong>{user?.name || "User"}</strong>
+            <span>{user?.role || "member"}</span>
+          </span>
+          <span className="menu-caret" aria-hidden="true">⌄</span>
+        </summary>
+        <div className="user-menu-panel">
+          <Link to="/profile/edit">Edit profile</Link>
+          <Link to="/change-password">Change password</Link>
+          <button type="button" onClick={handleLogout}>Sign out</button>
         </div>
-        <div className="user-meta">
-          <strong>{user?.name || "User"}</strong>
-          <span>{user?.role || "member"}</span>
-        </div>
-        <button type="button" className="text-btn" onClick={handleLogout}>
-          Logout
-        </button>
-      </div>
+      </details>
     </header>
   );
 };

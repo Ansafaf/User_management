@@ -42,7 +42,9 @@ const Register = () => {
         password: form.password,
       });
 
-      navigate("/login");
+      navigate("/login", {
+        state: { successMessage: "Account created successfully. Please sign in." },
+      });
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Registration failed. Please try again.",

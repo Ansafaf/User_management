@@ -1,87 +1,67 @@
-import UserNavbar from "../../components/UserNavbar";
+import { Link } from "react-router-dom";
+import UserPageLayout from "../../components/UserPageLayout";
 import { useAuth } from "../../hooks/auth";
+import ShapeGrid from "../../components/background";
+
 
 const UserDashboard = () => {
   const { user } = useAuth();
-
-  const firstName = user?.name?.split(" ")[0] || "User";
-  const roleLabel = user?.role === "admin" ? "Administrator" : "Member";
-
-  const stats = [
-    { label: "Open Tasks", value: user?.role === "admin" ? 8 : 12 },
-    { label: "Team Members", value: user?.role === "admin" ? 31 : 24 },
-    { label: "Projects", value: user?.role === "admin" ? 10 : 8 },
-    { label: "Alerts", value: user?.role === "admin" ? 2 : 3 },
-  ];
-
-  const myTasks =
-    user?.role === "admin"
-      ? [
-          "Review approval queue",
-          "Audit access permissions",
-          "Approve onboarding requests",
-        ]
-      : [
-          "Review access request",
-          "Finalize onboarding checklist",
-          "Update profile details",
-        ];
-
-  const recentUpdates =
-    user?.role === "admin"
-      ? [
-          "Access policy updated",
-          "New admin approvals pending",
-          "Security review completed",
-        ]
-      : [
-          "System maintenance scheduled",
-          "New team members approved",
-          "Security policy updated",
-        ];
+  const initials = user?.name
+    ?.split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("") || "U";
 
   return (
-    <div className="page-shell">
-      <div className="page-card dashboard-box">
-        <UserNavbar />
-
-        <div className="section-header">
+    <UserPageLayout
+      title="Dashboard"
+      description="Your account at a glance."
+      background={<ShapeGrid
+        className="user-dashboard-shape-grid"
+        direction="diagonal"
+        speed={0.18}
+        borderColor="rgba(24, 59, 53, 0.14)"
+        squareSize={46}
+        hoverFillColor="rgba(221, 112, 78, 0.16)"
+        hoverTrailAmount={3}
+      />}
+    >
+      <section className="account-overview" aria-label="Account overview">
+        <div className="account-identity">
+          <div className="account-avatar" aria-hidden="true">{initials}</div>
           <div>
-            <p className="muted-text">Welcome back, {firstName}</p>
-            <h1>{roleLabel} Dashboard</h1>
+            <p className="account-kicker">WELCOME BACK</p>
+            <h2>{user?.name || "Your account"}</h2>
+            <p>{user?.email || ""}</p>
           </div>
         </div>
-
-        <div className="stats-grid">
-          {stats.map((stat) => (
-            <div className="stat-card" key={stat.label}>
-              <span>{stat.label}</span>
-              <strong>{stat.value}</strong>
-            </div>
-          ))}
-        </div>
-
-        <div className="details-grid">
-          <div className="list-box">
-            <h3>My Tasks</h3>
-            <ul>
-              {myTasks.map((task) => (
-                <li key={task}>{task}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="list-box">
-            <h3>Recent Updates</h3>
-            <ul>
-              {recentUpdates.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
+        <span className="account-role">{user?.role || "Member"}</span>
+      </section>
+      <section className="account-shortcuts" aria-labelledby="shortcuts-heading">
+        <div className="account-section-heading">
+          <div>
+            <p className="account-kicker">YOUR ACCOUNT</p>
+            <h2 id="shortcuts-heading">Quick access</h2>
           </div>
         </div>
-      </div>
-    </div>
+        <Link className="account-shortcut" to="/profile">
+          <span className="shortcut-mark">01</span>
+          <span><strong>Profile details</strong><small>View your contact information</small></span>
+          <span className="shortcut-arrow" aria-hidden="true">→</span>
+        </Link>
+        <Link className="account-shortcut" to="/profile/edit">
+          <span className="shortcut-mark">02</span>
+          <span><strong>Edit your profile</strong><small>Update your name, email, or phone</small></span>
+          <span className="shortcut-arrow" aria-hidden="true">→</span>
+        </Link>
+        <Link className="account-shortcut" to="/change-password">
+          <span className="shortcut-mark">03</span>
+          <span><strong>Password &amp; security</strong><small>Change your account password</small></span>
+          <span className="shortcut-arrow" aria-hidden="true">→</span>
+        </Link>
+      </section>
+    </UserPageLayout>
   );
 };
 

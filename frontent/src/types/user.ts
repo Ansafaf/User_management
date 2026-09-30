@@ -1,12 +1,27 @@
-export type UserStatus = "Active" | "Pending" | "Inactive";
+export type UserRole = "user" | "admin";
+export type UserStatus = "Active" | "Blocked";
 
 export type User = {
     id: string;
     name: string;
     email: string;
-    role: "user" | "admin";
-    status: UserStatus;
+    role: UserRole;
+    status?: UserStatus;
     department?: string;
     location?: string;
     phone?: string;
+};
+
+export type AuthUser = Pick<User, "id" | "name" | "email" | "role" | "phone">;
+
+export type DashboardSummary = {
+    totalUsers: number;
+    active: number;
+    pending: number;
+    blocked: number;
+    activity: string[];
+};
+
+export type UserProfile = Pick<User, "id" | "name" | "email" | "role" | "phone"> & {
+    profileImage?: string;
 };

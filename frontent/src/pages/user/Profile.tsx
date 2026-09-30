@@ -1,33 +1,43 @@
-const Profile = () => {
-  return (
-    <div className="page-shell">
-      <div className="page-card">
-        <h1>My Profile</h1>
-        <div className="profile-card">
-          <div className="avatar">JD</div>
-          <div>
-            <h3>John Doe</h3>
-            <p>Senior Product Manager</p>
-          </div>
-        </div>
+import { Link } from "react-router-dom";
+import UserPageLayout from "../../components/UserPageLayout";
+import { useAuth } from "../../hooks/auth";
 
-        <div className="details-grid">
-          <div className="detail-item">
-            <span>Email</span>
-            <strong>john@company.com</strong>
-          </div>
-          <div className="detail-item">
-            <span>Department</span>
-            <strong>Operations</strong>
-          </div>
-          <div className="detail-item">
-            <span>Location</span>
-            <strong>New York</strong>
-          </div>
+const Profile = () => {
+  const { user } = useAuth();
+  const initials = user?.name
+    ?.split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("") || "U";
+
+  return (
+    <UserPageLayout title="Profile" description="Your personal and account details.">
+      <section className="profile-overview">
+        <div className="account-avatar" aria-hidden="true">{initials}</div>
+        <div className="profile-identity">
+          <h2>{user?.name || "User"}</h2>
+          <p>{user?.role || "Member"}</p>
         </div>
-      </div>
-    </div>
-  )
-}
+        <Link className="portal-button" to="/profile/edit">Edit profile</Link>
+      </section>
+
+      <section className="profile-details" aria-label="Profile details">
+        <div className="profile-detail">
+          <span>Email address</span>
+          <strong>{user?.email || "Not provided"}</strong>
+        </div>
+        <div className="profile-detail">
+          <span>Phone number</span>
+          <strong>{user?.phone || "Not provided"}</strong>
+        </div>
+        <div className="profile-detail">
+          <span>Account type</span>
+          <strong className="capitalize">{user?.role || "Member"}</strong>
+        </div>
+      </section>
+    </UserPageLayout>
+  );
+};
 
 export default Profile;

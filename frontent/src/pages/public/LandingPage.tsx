@@ -12,7 +12,7 @@ const LandingPage = () => {
         </nav>
         <div className="landing-actions">
           <Link to="/login">
-          <button className="nav-btn ghost-btn">Login</button>
+            <button className="nav-btn ghost-btn">Login</button>
           </Link>
 
           <Link to="/register">

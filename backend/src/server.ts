@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import connectDb from "./config/db.js";
 import AuthRouter from "./routes/authRoutes.js";
 import userRoute from "./routes/userRoute.js";
+import AdminRoute from "./routes/adminRoute.js";
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/auth", AuthRouter);
 app.use("/api/user", userRoute);
+app.use("/api/admin", AdminRoute);
 
 app.get("/", (req, res) => {
   res.json({

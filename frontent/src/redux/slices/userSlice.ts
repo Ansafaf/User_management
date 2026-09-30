@@ -1,13 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { User } from "../../types/user";
-
-type DashboardSummary = {
-    totalUsers: number;
-    active: number;
-    pending: number;
-    blocked: number;
-    activity: string[];
-};
+import type { DashboardSummary, User } from "../../types/user";
 
 type UserState = {
     users: User[];
@@ -15,57 +7,22 @@ type UserState = {
     dashboard: DashboardSummary;
     loading: boolean;
     error: string | null;
+    count: number
 };
 
-const initialUsers: User[] = [
-    {
-        id: "1",
-        name: "John Doe",
-        email: "john@company.com",
-        role: "admin",
-        status: "Active",
-        department: "Operations",
-        location: "New York",
-        phone: "+1 555 789 1234",
-    },
-    {
-        id: "2",
-        name: "Maria Chen",
-        email: "maria@company.com",
-        role: "user",
-        status: "Pending",
-        department: "Engineering",
-        location: "Seattle",
-        phone: "+1 555 123 4567",
-    },
-    {
-        id: "3",
-        name: "Ava Patel",
-        email: "ava@company.com",
-        role: "user",
-        status: "Inactive",
-        department: "Support",
-        location: "Austin",
-        phone: "+1 555 987 6543",
-    },
-];
-
 const initialState: UserState = {
-    users: initialUsers,
-    selectedUser: initialUsers[0],
+    users: [],
+    selectedUser: null,
     dashboard: {
-        totalUsers: initialUsers.length,
-        active: 1,
-        pending: 1,
-        blocked: 1,
-        activity: [
-            "John Doe updated profile",
-            "Maria Chen was approved",
-            "Team access renewed",
-        ],
+        totalUsers: 0,
+        active: 0,
+        pending: 0,
+        blocked: 0,
+        activity: [],
     },
     loading: false,
     error: null,
+    count:0
 };
 
 const userSlice = createSlice({
@@ -77,7 +34,7 @@ const userSlice = createSlice({
             state.dashboard.totalUsers = action.payload.length;
             state.dashboard.active = action.payload.filter((user) => user.status === "Active").length;
             state.dashboard.pending = action.payload.filter((user) => user.status === "Pending").length;
-            state.dashboard.blocked = action.payload.filter((user) => user.status === "Inactive").length;
+            state.dashboard.blocked = action.payload.filter((user) => user.status === "Blocked" || user.status === "Inactive").length;
         },
         setSelectedUser: (state, action: PayloadAction<User | null>) => {
             state.selectedUser = action.payload;
@@ -91,8 +48,11 @@ const userSlice = createSlice({
         setDashboardSummary: (state, action: PayloadAction<DashboardSummary>) => {
             state.dashboard = action.payload;
         },
+        setCountIncrement: (state)=>{
+            state.count += 1;
+        }
     },
 });
 
-export const { setUsers, setSelectedUser, setLoading, setError, setDashboardSummary } = userSlice.actions;
+export const { setUsers, setSelectedUser, setLoading, setError, setDashboardSummary , setCountIncrement} = userSlice.actions;
 export default userSlice.reducer;

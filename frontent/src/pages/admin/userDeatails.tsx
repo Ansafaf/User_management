@@ -5,21 +5,26 @@ import Loader from "../../components/Loader";
 import { getUserById } from "../../services/adminApi";
 import { setError, setLoading, setSelectedUser } from "../../redux/slices/userSlice";
 import type { AppDispatch, RootState } from "../../redux/store";
+import { useAuth } from "../../hooks/auth";
 
 const UserDetails = () => {
+  const { token } = useAuth();
   const { id } = useParams();
   const dispatch = useDispatch<AppDispatch>();
   const selectedUser = useSelector((state: RootState) => state.users.selectedUser);
   const loading = useSelector((state: RootState) => state.users.loading);
+  const error = useSelector((state: RootState) => state.users.error);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !token) return;
 
     const fetchUser = async () => {
+      dispatch(setError(null));
+      dispatch(setSelectedUser(null));
       dispatch(setLoading(true));
       try {
-        const user = await getUserById(id);
-        dispatch(setSelectedUser(user ?? null));
+        const user = await getUserById(id, token);
+        dispatch(setSelectedUser(user));
       } catch (error) {
         dispatch(setError(error instanceof Error ? error.message : "Failed to load user details"));
       } finally {
@@ -28,7 +33,7 @@ const UserDetails = () => {
     };
 
     fetchUser();
-  }, [dispatch, id]);
+  }, [dispatch, id, token]);
 
   if (loading) {
     return (
@@ -40,12 +45,14 @@ const UserDetails = () => {
     );
   }
 
-  if (!selectedUser) {
+  if (error || !selectedUser) {
     return (
       <div className="page-shell">
         <div className="page-card">
           <h1>User Details</h1>
-          <p className="muted-text">User not found.</p>
+          <p className={error ? "error-message" : "muted-text"} role={error ? "alert" : undefined}>
+            {error || "User not found."}
+          </p>
         </div>
       </div>
     );
@@ -71,7 +78,7 @@ const UserDetails = () => {
           </div>
           <div className="detail-item">
             <span>Status</span>
-            <strong>{selectedUser.status}</strong>
+            <strong>{selectedUser.status || "Not set"}</strong>
           </div>
           <div className="detail-item">
             <span>Department</span>

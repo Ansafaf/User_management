@@ -2,6 +2,7 @@ import { useState } from "react";
 import { loginUser } from "../../services/authApi";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/auth";
+import RouteNotice from "../../components/RouteNotice";
 
 const Login = () => {
     const { login } = useAuth();
@@ -25,7 +26,7 @@ const Login = () => {
         try {
             const data = await loginUser({ email, password });
             login(data.user, data.token);
-            navigate("/dashboard");
+            navigate(data.user.role === "admin" ? "/admin/dashboard" : "/dashboard", { replace: true });
         } catch (err) {
             setError(
                 err instanceof Error ? err.message : "Login failed. Please try again.",
@@ -42,6 +43,7 @@ const Login = () => {
                     ← Back
                 </button>
                 <h1>Login</h1>
+                <RouteNotice />
                 <form className="form-grid" onSubmit={handleSubmit}>
                     <label className="field">
                         <span>Email</span>

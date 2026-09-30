@@ -1,14 +1,6 @@
-const Api_url = (import.meta.env.VITE_API_URL || import.meta.env.API_URL || "http://localhost:3000").replace(/\/$/, "");
+import type { UserProfile } from "../types/user";
 
-type UserProfile = {
-    id?: string;
-    name: string;
-    email: string;
-    phone?: string;
-    department?: string;
-    location?: string;
-    role?: "user" | "admin";
-};
+const Api_url = (import.meta.env.VITE_API_URL || import.meta.env.API_URL || "http://localhost:3000").replace(/\/$/, "");
 
 type ChangePasswordPayload = {
     currentPassword: string;
