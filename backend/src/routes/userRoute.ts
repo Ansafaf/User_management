@@ -12,6 +12,6 @@ const userRoute = express.Router();
 userRoute.get("/profile", authMiddleware, getProfile);
 userRoute.put("/profile", authMiddleware, updateProfile);
 userRoute.post("/change-password", authMiddleware, changePass);
-userRoute.delete("/profile", authMiddleware, deleteOwn);
+userRoute.delete("/account", authMiddleware, deleteOwn);
 
 export default userRoute;

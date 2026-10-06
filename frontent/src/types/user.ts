@@ -7,12 +7,11 @@ export type User = {
     email: string;
     role: UserRole;
     status?: UserStatus;
-    department?: string;
-    location?: string;
+    profileImage?: string;
     phone?: string;
 };
 
-export type AuthUser = Pick<User, "id" | "name" | "email" | "role" | "phone">;
+export type AuthUser = Pick<User, "id" | "name" | "email" | "role" | "phone" | "profileImage">;
 
 export type DashboardSummary = {
     totalUsers: number;

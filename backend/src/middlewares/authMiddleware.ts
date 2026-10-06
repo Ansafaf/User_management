@@ -1,6 +1,7 @@
 import type {NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { Status_Codes } from "../constants/statusCodes.js";
+import User from "../models/User.js";
 
 interface JwtPayload{
     userId: string;
@@ -10,7 +11,7 @@ export interface AuthRequest extends Request{
     user?: JwtPayload
 }
 
-export const authMiddleware = (req: AuthRequest, res:Response, next: NextFunction):void =>{
+export const authMiddleware = async(req: AuthRequest, res:Response, next: NextFunction) =>{
     try{
         const authHeader = req.headers.authorization;
         if(!authHeader){
@@ -27,6 +28,21 @@ export const authMiddleware = (req: AuthRequest, res:Response, next: NextFunctio
             return;
         }
         const decoded = jwt.verify(token,process.env.JWT_SECRET!) as JwtPayload;
+        const user = await User.findById(decoded.userId);
+        if(!user){
+            res.status(Status_Codes.UNAUTHORIZED).json({
+                code: "ACCOUNT_DELETED",
+                message:"Your account no longer exists. It may have been deleted by an administrator."
+            });
+            return;
+        }
+        if(user?.status === "Blocked"){
+            res.status(Status_Codes.FORBIDDEN).json({
+                code: "ACCOUNT_BLOCKED",
+                message:"This account was blocked by an administrator."
+            })
+            return;
+        }
         req.user = decoded;
         next();
     }

@@ -1,6 +1,8 @@
-import { Link } from "react-router-dom"
 
-const LandingPage = () => {
+import { Link } from "react-router-dom";
+
+const LandingPage = ()=>{
+  
   return (
     <div className="landing-shell">
       <header className="landing-header">
@@ -20,7 +22,6 @@ const LandingPage = () => {
           </Link>
         </div>
       </header>
-
       <main className="landing-hero">
         <div className="hero-copy">
           <span className="pill">Built for modern teams</span>

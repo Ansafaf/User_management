@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Loader from "../../components/Loader";
 import { getUserById } from "../../services/adminApi";
 import { setError, setLoading, setSelectedUser } from "../../redux/slices/userSlice";
@@ -10,6 +10,7 @@ import { useAuth } from "../../hooks/auth";
 const UserDetails = () => {
   const { token } = useAuth();
   const { id } = useParams();
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const selectedUser = useSelector((state: RootState) => state.users.selectedUser);
   const loading = useSelector((state: RootState) => state.users.loading);
@@ -39,6 +40,9 @@ const UserDetails = () => {
     return (
       <div className="page-shell">
         <div className="page-card">
+          <button type="button" className="back-btn" onClick={() => navigate("/admin/users")}>
+            ← Back to users
+          </button>
           <Loader message="Loading user details..." />
         </div>
       </div>
@@ -49,6 +53,9 @@ const UserDetails = () => {
     return (
       <div className="page-shell">
         <div className="page-card">
+          <button type="button" className="back-btn" onClick={() => navigate("/admin/dashboard")}>
+            ← Back to dashboard
+          </button>
           <h1>User Details</h1>
           <p className={error ? "error-message" : "muted-text"} role={error ? "alert" : undefined}>
             {error || "User not found."}
@@ -61,7 +68,15 @@ const UserDetails = () => {
   return (
     <div className="page-shell">
       <div className="page-card">
-        <h1>User Details</h1>
+        <button type="button" className="back-btn" onClick={() => navigate("/admin/dashboard")}>
+          ← Back to dashboard
+        </button>
+        <div className="section-header">
+          <h1>User Details</h1>
+          <button type="button" className="primary-btn small-btn" onClick={() => navigate(`/admin/users/${selectedUser.id}/edit`)}>
+            Edit User
+          </button>
+        </div>
 
         <div className="details-grid">
           <div className="detail-item">
@@ -81,12 +96,8 @@ const UserDetails = () => {
             <strong>{selectedUser.status || "Not set"}</strong>
           </div>
           <div className="detail-item">
-            <span>Department</span>
-            <strong>{selectedUser.department || "N/A"}</strong>
-          </div>
-          <div className="detail-item">
-            <span>Location</span>
-            <strong>{selectedUser.location || "N/A"}</strong>
+            <span>Phone</span>
+            <strong>{selectedUser.phone || "N/A"}</strong>
           </div>
         </div>
       </div>

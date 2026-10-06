@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
 import bcrypt from "bcrypt";
 import { Messages } from "../constants/message.js";
 import { Status_Codes } from "../constants/statusCodes.js";
@@ -21,6 +21,7 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<void>
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                phone: user.phone,
                 role: user.role,
                 profileImage: user.profileImage
             }
@@ -35,14 +36,7 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<void>
 
 export const updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { name, profileImage } = req.body as { name?: string; profileImage?: string };
-
-        if (!name && !profileImage) {
-            res.status(Status_Codes.BAD_REQUEST).json({
-                message: "Name or profile image is required"
-            });
-            return;
-        }
+        const { name,profileImage,  email , phone} = req.body;
 
         const user = await User.findById(req.user?.userId);
         if (!user) {
@@ -52,9 +46,36 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
             return;
         }
 
-        if (name) user.name = name.trim();
-        if (profileImage) user.profileImage = profileImage;
-
+        if(name !== undefined){
+            const trimmedName = name.trim();
+            if(!trimmedName){
+                res.status(Status_Codes.BAD_REQUEST).json({
+                    message:"Name cannot be empty"
+                })
+                return;
+            }
+            user.name = trimmedName;
+        }
+        if(email !== undefined){
+            const normalizedEmail = email.trim().toLowerCase();
+            if(normalizedEmail !== user.email){
+                const existingUser = await User.findOne({email: normalizedEmail,_id: {$ne: user._id}});
+                if(existingUser){
+                    res.status(Status_Codes.CONFLICT).json({
+                        message:"Email already in use"
+                    })
+                    return;
+                }
+                user.email = normalizedEmail;
+            }
+        }
+        if(phone !== undefined){
+            user.phone = phone;
+        }
+        if(profileImage !== undefined){
+            user.profileImage = profileImage;
+        }
+        
         await user.save();
 
         res.status(Status_Codes.OK).json({
@@ -63,6 +84,7 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                phone: user.phone,
                 role: user.role,
                 profileImage: user.profileImage
             }
@@ -136,7 +158,14 @@ export const changePass = async (req: AuthRequest, res: Response): Promise<void>
 
 export const deleteOwn = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const user = await User.findByIdAndDelete(req.user?.userId);
+        const userId = req.user?.userId;
+        if(!userId){
+            res.status(Status_Codes.UNAUTHORIZED).json({
+                message: "Unauthorized"
+            })
+            return;
+        }
+        const user = await User.findByIdAndDelete(userId);
 
         if (!user) {
             res.status(Status_Codes.NOT_FOUND).json({

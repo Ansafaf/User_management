@@ -228,6 +228,20 @@ a {
   font-weight: 600;
 }
 
+.loader-shell--inline {
+  min-height: 0;
+  justify-content: flex-start;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.loader-shell--inline .loader-spinner {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+  flex: 0 0 auto;
+}
+
 .loader-spinner {
   width: 20px;
   height: 20px;
@@ -261,13 +275,15 @@ a {
   gap: 8px;
 }
 
-.field input {
+.field input,
+.field select {
   width: 100%;
   min-height: 50px;
   border-radius: 12px;
   border: 1px solid var(--border);
   padding: 0 14px;
   background: #f8faff;
+  color: var(--text);
 }
 
 .small-btn {
@@ -329,6 +345,44 @@ a {
   background: transparent;
   color: var(--primary);
   font-weight: 700;
+}
+
+.user-toggle {
+  min-width: 84px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.user-toggle--block {
+  border-color: #f2c9cc;
+  background: #fff5f5;
+  color: #a8333c;
+}
+
+.user-toggle--block:hover {
+  border-color: #e7aeb3;
+  background: #fee9ea;
+}
+
+.user-toggle--unblock {
+  border-color: #b9e1d3;
+  background: #effaf5;
+  color: #187653;
+}
+
+.user-toggle--unblock:hover {
+  border-color: #8ecbb3;
+  background: #dff4e9;
+}
+
+.user-toggle:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, 0.35);
+  outline-offset: 2px;
 }
 
 .muted-text {
@@ -393,6 +447,31 @@ a {
 }
 
 .admin-primary-link:hover { background: #4536d5; transform: translateY(-1px); }
+.admin-welcome-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.admin-logout-button {
+  padding: 11px 16px;
+  border: 1px solid #d8dbe5;
+  border-radius: 11px;
+  background: white;
+  color: #3d4154;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.admin-logout-button:hover {
+  background: #f5f6fa;
+  border-color: #b9bdca;
+}
+
 .admin-dashboard-error { margin-bottom: 20px; }
 
 .admin-stats-grid {
@@ -503,7 +582,8 @@ a {
 @media (max-width: 540px) {
   .admin-dashboard-shell { padding: 22px 14px; }
   .admin-welcome { align-items: flex-start; flex-direction: column; }
-  .admin-primary-link { align-self: stretch; justify-content: center; }
+  .admin-welcome-actions { width: 100%; }
+  .admin-primary-link { flex: 1; justify-content: center; }
   .admin-stats-grid { gap: 10px; }
   .admin-stat-card { min-height: 145px; padding: 15px 13px; grid-template-columns: 34px 1fr; column-gap: 8px; }
   .admin-stat-mark { width: 34px; height: 34px; border-radius: 10px; font-size: 0.63rem; }
@@ -905,6 +985,172 @@ a {
   font-size: 0.93rem;
 }
 
+.danger-button,
+.delete-cancel-button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.danger-button {
+  background: #a34131;
+  color: #fff;
+}
+
+.danger-button:hover:not(:disabled) {
+  background: #842f24;
+}
+
+.danger-button-outline {
+  border-color: #d9aaa0;
+  background: #fff;
+  color: #9b3e30;
+}
+
+.danger-button-outline:hover:not(:disabled) {
+  border-color: #a34131;
+  background: #fff3ef;
+}
+
+.danger-button:disabled,
+.delete-cancel-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.delete-confirmation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 24px;
+  padding: 20px 22px;
+  border: 1px solid #e7c5bd;
+  border-radius: 10px;
+  background: #fff8f5;
+}
+
+.admin-delete-dialog {
+  width: min(440px, calc(100% - 32px));
+  padding: 24px;
+  border: 1px solid #e7c5bd;
+  border-radius: 10px;
+  color: var(--text);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+}
+
+.admin-delete-dialog::backdrop {
+  background: rgba(15, 23, 42, 0.48);
+}
+
+.admin-delete-dialog h2 {
+  margin: 0;
+  color: #71382f;
+  font-size: 1.1rem;
+}
+
+.admin-delete-dialog p {
+  margin: 10px 0 22px;
+  color: #795c57;
+  line-height: 1.5;
+}
+
+.admin-delete-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.admin-delete-cancel,
+.admin-delete-confirm {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-weight: 650;
+}
+
+.admin-delete-cancel {
+  border-color: var(--border);
+  background: #fff;
+  color: var(--text);
+}
+
+.admin-delete-confirm {
+  background: #a34131;
+  color: #fff;
+}
+
+.admin-delete-cancel:disabled,
+.admin-delete-confirm:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.delete-confirmation h2 {
+  margin: 0;
+  color: #71382f;
+  font-size: 1rem;
+}
+
+.delete-confirmation p {
+  margin: 6px 0 0;
+  color: #795c57;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.delete-confirmation-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+}
+
+.delete-cancel-button {
+  border-color: var(--portal-border);
+  background: #fff;
+  color: var(--portal-ink);
+}
+
+.delete-cancel-button:hover:not(:disabled) {
+  background: #f1f5f2;
+}
+
+.profile-feedback {
+  margin: 20px 0 0;
+  padding: 13px 16px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.profile-feedback.success {
+  border-color: #b6d8c6;
+  background: #edf7f1;
+  color: #246344;
+}
+
+.profile-feedback.error {
+  border-color: #e7c5bd;
+  background: #fff3ef;
+  color: #8f352a;
+}
+
+.danger-button:focus-visible,
+.delete-cancel-button:focus-visible {
+  outline: 3px solid #f3b69b;
+  outline-offset: 2px;
+}
+
 .capitalize {
   text-transform: capitalize;
 }
@@ -1050,6 +1296,16 @@ a {
 
   .profile-overview {
     align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .delete-confirmation {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .delete-confirmation-actions {
     flex-wrap: wrap;
   }
 

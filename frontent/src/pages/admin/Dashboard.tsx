@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "../../components/Loader";
@@ -8,7 +8,7 @@ import type { AppDispatch, RootState } from "../../redux/store";
 import { useAuth } from "../../hooks/auth";
 
 const AdminDashboard = () => {
-  const { token, user } = useAuth();
+  const { token, user, logout } = useAuth();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const dashboard = useSelector((state: RootState) => state.users.dashboard);
@@ -17,6 +17,11 @@ const AdminDashboard = () => {
   const users = useSelector((state: RootState) => state.users.users);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All statuses");
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   useEffect(() => {
     if (!token) return;
@@ -44,15 +49,15 @@ const AdminDashboard = () => {
     return () => { cancelled = true; };
   }, [dispatch, token]);
 
-  const visibleUsers = useMemo(() => {
+  const visibleUsers = (() => {
     const normalizedQuery = query.trim().toLowerCase();
     return users.filter((item) => {
-      const matchesQuery = !normalizedQuery || [item.name, item.email, item.department, item.role]
+      const matchesQuery = !normalizedQuery || [item.name, item.email, item.role]
         .some((value) => value?.toLowerCase().includes(normalizedQuery));
       const matchesStatus = statusFilter === "All statuses" || (item.status || "Not set") === statusFilter;
       return matchesQuery && matchesStatus;
     }).slice(0, 8);
-  }, [query, statusFilter, users]);
+  })();
 
   if (loading) {
     return <div className="admin-dashboard-shell"><div className="admin-dashboard-card"><Loader message="Loading dashboard..." /></div></div>;
@@ -62,7 +67,6 @@ const AdminDashboard = () => {
   const stats = [
     { label: "Total users", value: dashboard.totalUsers, mark: "TU", tone: "indigo" },
     { label: "Active", value: dashboard.active, mark: "AC", tone: "green" },
-    { label: "Pending", value: dashboard.pending, mark: "PE", tone: "amber" },
     { label: "Blocked", value: dashboard.blocked, mark: "BL", tone: "rose" },
   ];
 
@@ -75,7 +79,10 @@ const AdminDashboard = () => {
             <h1>Good day, {greetingName}</h1>
             <p className="admin-welcome-copy">Here’s what’s happening across your workspace today.</p>
           </div>
-          <Link className="admin-primary-link" to="/admin/users">Manage users <span aria-hidden="true">↗</span></Link>
+          <div className="admin-welcome-actions">
+            <Link className="admin-primary-link" to="/admin/users">Manage users <span aria-hidden="true">↗</span></Link>
+            <button className="admin-logout-button" type="button" onClick={handleLogout}>Sign out</button>
+          </div>
         </header>
 
         {error && <p className="error-message admin-dashboard-error" role="alert">{error}</p>}
@@ -109,14 +116,14 @@ const AdminDashboard = () => {
             <label className="admin-filter-label">
               <span className="sr-only">Filter by status</span>
               <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-                {["All statuses", "Active", "Pending", "Blocked", "Inactive", "Not set"].map((status) => <option key={status}>{status}</option>)}
+                {["All statuses", "Active", "Blocked", "Not set"].map((status) => <option key={status}>{status}</option>)}
               </select>
             </label>
           </div>
 
           <div className="admin-table-wrap">
             <table className="admin-user-table">
-              <thead><tr><th scope="col">USER</th><th scope="col">ROLE</th><th scope="col">DEPARTMENT</th><th scope="col">STATUS</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
+              <thead><tr><th scope="col">USER</th><th scope="col">ROLE</th><th scope="col">STATUS</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
               <tbody>
                 {visibleUsers.map((item) => {
                   const initials = item.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "U";
@@ -124,7 +131,6 @@ const AdminDashboard = () => {
                   return <tr key={item.id}>
                     <td><div className="admin-user-cell"><span className="admin-user-avatar" aria-hidden="true">{initials}</span><span className="admin-user-info"><strong>{item.name}</strong><small>{item.email}</small></span></div></td>
                     <td><span className="admin-role-label">{item.role}</span></td>
-                    <td className="admin-department-cell">{item.department || "—"}</td>
                     <td><span className={`admin-status-pill ${status.toLowerCase().replace(/\s+/g, "-")}`}><i aria-hidden="true" />{status}</span></td>
                     <td><button className="admin-view-button" type="button" onClick={() => navigate(`/admin/users/${item.id}`)}>View <span aria-hidden="true">↗</span></button></td>
                   </tr>;

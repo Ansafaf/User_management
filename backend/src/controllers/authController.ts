@@ -58,7 +58,14 @@ export const login = async(req: Request, res:Response) :Promise<void> =>{
         const normalizedEmail = email.trim().toLowerCase();
         const user = await User.findOne({
             email: normalizedEmail
-        })
+        });
+        const isBlocked = await user?.status === "Blocked";
+        if(isBlocked){
+            res.status(Status_Codes.FORBIDDEN).json({
+                message: "This account was blocked by an administrator. Contact an administrator for help."
+            });
+            return;
+        }
 
         if(!user){
             res.status(Status_Codes.UNAUTHORIZED).json({

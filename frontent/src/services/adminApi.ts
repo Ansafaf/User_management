@@ -29,6 +29,30 @@ const request = async (path: string, token: string): Promise<unknown> => {
     return payload;
 };
 
+const requestWithBody = async (path: string, token: string, body: unknown, method = "POST"): Promise<unknown> => {
+    const response = await fetch(`${apiUrl}${path}`, {
+        method,
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+    });
+    const text = await response.text();
+    let payload: unknown;
+    try {
+        payload = text ? JSON.parse(text) : {};
+    } catch {
+        payload = {};
+    }
+    if (!response.ok) {
+        const message = isRecord(payload) ? payload.message ?? payload.error : undefined;
+        throw new Error(typeof message === "string" ? message : `Request failed with status ${response.status}`);
+    }
+    return payload;
+};
+
 const normalizeUser = (value: unknown): User => {
     if (!isRecord(value)) {
         throw new Error("The server returned an invalid user record.");
@@ -86,10 +110,47 @@ export const getUsers = async (token: string): Promise<User[]> => {
     const payload = await request("/api/admin/users", token);
     return extractUsers(payload).map(normalizeUser);
 };
-
 export const getUserById = async (id: string, token: string): Promise<User> => {
     const payload = await request(`/api/admin/users/${encodeURIComponent(id)}`, token);
     return normalizeUser(extractSingleUser(payload));
+};
+
+export const createAdminUser = async (
+    data: { name: string; email: string; password: string },
+    token: string,
+): Promise<User> => {
+    const payload = await requestWithBody("/api/admin/users", token, data);
+    return normalizeUser(extractSingleUser(payload));
+};
+
+export const updateAdminUser = async (
+    id: string,
+    data: Pick<User, "name" | "email" | "phone" | "role">,
+    token: string,
+): Promise<User> => {
+    const payload = await requestWithBody(`/api/admin/users/${encodeURIComponent(id)}`, token, data, "PATCH");
+    return normalizeUser(extractSingleUser(payload));
+};
+
+export const deleteAdminUser = async (id: string, token: string): Promise<void> => {
+    const response = await fetch(`${apiUrl}/api/admin/users/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    const text = await response.text();
+    let payload: unknown;
+    try {
+        payload = text ? JSON.parse(text) : {};
+    } catch {
+        payload = {};
+    }
+    if (!response.ok) {
+        const message = isRecord(payload) ? payload.message ?? payload.error : undefined;
+        throw new Error(typeof message === "string" ? message : `Request failed with status ${response.status}`);
+    }
 };
 
 export const getAdminDashboardSummary = async (token: string): Promise<DashboardSummary> => {
@@ -119,3 +180,38 @@ export const getAdminDashboardSummary = async (token: string): Promise<Dashboard
             : [],
     };
 };
+
+
+export const toggleBlockUser = async(userId: string, newStatus: UserStatus, token: string)=>{
+    try{
+        const path = `${apiUrl}/api/admin/users/${encodeURIComponent(userId)}/block`;
+        const response = await fetch(path,
+            {
+                method:"PATCH",
+                headers:{
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    status:newStatus
+                })
+            }
+        );
+        const text = await response.text();
+        let payload: unknown;
+        try {
+            payload = text ? JSON.parse(text) : {};
+        } catch {
+            payload = {};
+        }
+        if (!response.ok) {
+            const message = isRecord(payload) ? payload.message ?? payload.error : undefined;
+            throw new Error(typeof message === "string" ? message : `Request failed with status ${response.status}`);
+        }
+        return normalizeUser(isRecord(payload) ? payload.user : undefined);
+    }
+    catch(err){
+        console.log(`failed to toggle the user`,err);
+        throw err;
+    }
+}

@@ -7,7 +7,7 @@ interface User {
   password: string;
   role: "user" | "admin";
   profileImage?: string;
-  status?: "active" | "pending" | "inactive";
+  status?: "Active" | "Blocked";
   phone?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema<User>({
   },
   status: {
     type: String,
-    enum: ["Active", "Pending", "Inactive"],
+    enum: ["Active", "Blocked"],
     default: "Active",
   },
   phone: {

@@ -4,6 +4,7 @@ import { AuthProvider } from './context/authContext'
 import { Provider } from 'react-redux';
 import { store } from './redux/store';
 
+
 function App() {
   return (
     <Provider store={store}>
@@ -13,8 +14,7 @@ function App() {
       </BrowserRouter>
     </AuthProvider>
     </Provider>
-    
   )
 }
 
-export default App
+export default App;

@@ -8,7 +8,9 @@ type UserState = {
     loading: boolean;
     error: string | null;
     count: number
+    avgPrice: number
 };
+
 
 const initialState: UserState = {
     users: [],
@@ -22,7 +24,8 @@ const initialState: UserState = {
     },
     loading: false,
     error: null,
-    count:0
+    count:0,
+    avgPrice: 0
 };
 
 const userSlice = createSlice({
@@ -31,10 +34,26 @@ const userSlice = createSlice({
     reducers: {
         setUsers: (state, action: PayloadAction<User[]>) => {
             state.users = action.payload;
-            state.dashboard.totalUsers = action.payload.length;
-            state.dashboard.active = action.payload.filter((user) => user.status === "Active").length;
-            state.dashboard.pending = action.payload.filter((user) => user.status === "Pending").length;
-            state.dashboard.blocked = action.payload.filter((user) => user.status === "Blocked" || user.status === "Inactive").length;
+        },
+        updateUser: (state, action: PayloadAction<User>) => {
+            const index = state.users.findIndex((user) => user.id === action.payload.id);
+            if (index < 0) return;
+            const previous = state.users[index];
+            if (previous.status !== action.payload.status) {
+                if (previous.status === "Active") state.dashboard.active = Math.max(0, state.dashboard.active - 1);
+                if (previous.status === "Blocked") state.dashboard.blocked = Math.max(0, state.dashboard.blocked - 1);
+                if (action.payload.status === "Active") state.dashboard.active += 1;
+                if (action.payload.status === "Blocked") state.dashboard.blocked += 1;
+            }
+            state.users[index] = action.payload;
+        },
+        removeUser: (state, action: PayloadAction<string>) => {
+            const user = state.users.find((item) => item.id === action.payload);
+            if (!user) return;
+            state.users = state.users.filter((item) => item.id !== action.payload);
+            state.dashboard.totalUsers = Math.max(0, state.dashboard.totalUsers - 1);
+            if (user.status === "Active") state.dashboard.active = Math.max(0, state.dashboard.active - 1);
+            if (user.status === "Blocked") state.dashboard.blocked = Math.max(0, state.dashboard.blocked - 1);
         },
         setSelectedUser: (state, action: PayloadAction<User | null>) => {
             state.selectedUser = action.payload;
@@ -50,9 +69,12 @@ const userSlice = createSlice({
         },
         setCountIncrement: (state)=>{
             state.count += 1;
+        },
+        setAverage: (state, action: PayloadAction<number>)=>{
+            state.avgPrice = action.payload;
         }
     },
 });
 
-export const { setUsers, setSelectedUser, setLoading, setError, setDashboardSummary , setCountIncrement} = userSlice.actions;
+export const { setUsers, setAverage,updateUser, removeUser, setSelectedUser, setLoading, setError, setDashboardSummary , setCountIncrement} = userSlice.actions;
 export default userSlice.reducer;

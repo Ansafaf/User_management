@@ -1,59 +1,77 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Loader from "../../components/Loader";
 import UserPageLayout from "../../components/UserPageLayout";
 import { useAuth } from "../../hooks/auth";
-import { uploadProfileImage } from "../../services/firebaseStore";
+import { uploadProfileImage } from "../../services/cloudinary";
 import { updateUserProfile } from "../../services/userApi";
 
 const EditProfile = () => {
-  const { user, token } = useAuth();
+  const { user, token, login } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
   });
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadStage, setUploadStage] = useState<"preparing" | "uploading" | "saving">("preparing");
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || "",
-        email: user.email || "",
-        phone: user.phone || "",
-      });
-    }
-  }, [user]);
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
+    input.value = "";
 
     if (!token) {
       setError("Your session has expired. Please log in again.");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      setError("Choose a valid image file.");
       return;
     }
 
     setError("");
     setSuccess("");
     setIsUploading(true);
+    setUploadStage("preparing");
+    setUploadProgress(0);
 
     try {
       const userId = user?.id;
-      if (!userId) {
-        throw new Error("User is not authenticated");
-      }
+      if (!userId) throw new Error("User is not authenticated.");
 
-      const imageUrl = await uploadProfileImage(userId, file);
-      await updateUserProfile({ profileImage: imageUrl }, token);
+      console.log("Starting Firebase upload");
+
+const imageUrl = await uploadProfileImage(file, (progress) => {
+  console.log("Progress:", progress);
+  setUploadStage("uploading");
+  setUploadProgress(progress);
+});
+
+console.log("Firebase upload finished:", imageUrl);
+
+setUploadStage("saving");
+
+console.log("Updating backend...");
+const updatedUser = {...user, profileImage: imageUrl };
+await updateUserProfile(updatedUser, token);
+
+console.log("Backend update finished");
+login(updatedUser, token);
+
+console.log("Auth state updated");
+     
       setSuccess("Profile photo updated successfully.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to upload profile image.");
@@ -62,13 +80,18 @@ const EditProfile = () => {
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setError("");
     setSuccess("");
 
     if (!token) {
       setError("Your session has expired. Please log in again.");
+      return;
+    }
+
+    if (!user) {
+      setError("Your account could not be loaded. Please sign in again.");
       return;
     }
 
@@ -80,11 +103,14 @@ const EditProfile = () => {
     setIsSubmitting(true);
 
     try {
-      await updateUserProfile({
+      const updatedUser = {
+        ...user,
         name: formData.name.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),
-      }, token);
+      };
+      await updateUserProfile(updatedUser, token);
+      login(updatedUser, token);
       navigate("/dashboard", {
         state: { successMessage: "Profile updated successfully." },
       });
@@ -100,8 +126,17 @@ const EditProfile = () => {
         <form className="user-form" onSubmit={handleSubmit}>
           <label htmlFor="photo" className="user-field photo-field">
             <span>Profile photo</span>
-            <input id="photo" type="file" accept="image/*" name="image" onChange={handleImageChange} />
-            {isUploading && <small>Uploading photo...</small>}
+            <input id="photo" type="file" accept="image/*" name="image" onChange={handleImageChange} disabled={isUploading} />
+            {isUploading && (
+              <Loader
+                message={uploadStage === "preparing"
+                  ? "Preparing photo..."
+                  : uploadStage === "saving"
+                    ? "Saving photo..."
+                    : `Uploading photo... ${uploadProgress}%`}
+                inline
+              />
+            )}
           </label>
 
           <label className="user-field">
